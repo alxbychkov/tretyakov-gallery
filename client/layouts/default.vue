@@ -1,3 +1,6 @@
+<script setup>
+// import bootstrap from "bootstrap";
+</script>
 <template>
   <header>
     <nav class="navbar navbar-expand-lg bg-light">
