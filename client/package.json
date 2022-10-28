@@ -11,6 +11,9 @@
     "nuxt": "3.0.0-rc.12"
   },
   "dependencies": {
-    "bootstrap": "^5.2.2"
+    "@nuxtjs/composition-api": "^0.33.1",
+    "@pinia/nuxt": "^0.4.3",
+    "bootstrap": "^5.2.2",
+    "pinia": "^2.0.23"
   }
 }

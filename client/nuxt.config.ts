@@ -3,5 +3,8 @@ export default defineNuxtConfig({
     meta: {
         title: 'Gallery',
       },
-    css: ['~/assets/styles/style.css']
+    css: ['~/assets/styles/style.css'],
+    modules: [
+      '@pinia/nuxt',
+    ],
 })
