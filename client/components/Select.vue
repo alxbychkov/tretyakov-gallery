@@ -16,11 +16,11 @@ const onInput = (key) => {
 <template>
   <select
     class="form-select me-2"
-    :key="filters[0]"
     ref="select"
     @input="onInput(filters[0])"
+    :disabled="filters[1].size < 2"
   >
-    <option selected disabled>{{ filters[0] }}</option>
+    <option value="">{{ filters[0] }} (all)</option>
     <option v-for="value in filters[1]" :value="value" :key="value">
       {{ value }}
     </option>

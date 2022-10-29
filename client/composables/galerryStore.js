@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-const GALLERY = [
+let GALLERY = [
   {
     id: "1",
     img: "/images/1_1.jpg",
@@ -127,34 +127,73 @@ export const useGalleryStore = defineStore("GalleryStore", {
   state: () => ({
     gallery: [],
     filteredGallery: [],
-    user: "guest",
-    filters: {},
+    admin: false,
+    filters: {
+      author: new Set(),
+      work: new Set()
+    },
     nav: [],
+    isLoaded: false
   }),
   actions: {
     async get(category = "") {
-      if (category) {
-        this.gallery = GALLERY.filter((g) => g.work === category);
-      } else {
-        this.gallery = GALLERY;
-      }
+      this.isLoaded = false;
 
-      this.filteredGallery = this.gallery;
+      if (category && category !== 'all') {
+        this.gallery = [...GALLERY.filter((g) => g.work === category)];
+      } else {
+        this.gallery = [...GALLERY];
+      }
+  
+      this.filteredGallery = [...this.gallery];
       this.nav = new Set(GALLERY.map((i) => i.work));
-      this.getFilters(["author", "work"]);
+      this.getFilters();
+
+      this.isLoaded = true;
     },
     getFilters(array) {
-      for (const name of array) {
-        this.filters[name] = new Set(this.gallery.map((i) => i[name]));
+      this.clearFilters();
+
+      const temp = {};
+
+      Object.keys(this.filters).forEach(key => {
+        temp[key] = new Set(this.gallery.map((i) => i[key]));      
+      });
+
+      this.filters = temp;
+    },
+    clearFilters() {
+      this.filters = {
+        author: new Set(),
+        work: new Set()
       }
     },
-    filterGallery(key, value) {
-      this.filteredGallery = this.gallery.filter((i) => i[key] === value);
+    filterGallery(obj) {
+      let temp = [...this.gallery];
+      
+      if (Object.entries(obj).length) {
+        Object.entries(obj).forEach(f => {
+          this.filteredGallery = temp.filter((i) => i[`${f[0]}`] === f[1]);
+          temp = this.filteredGallery;
+        });
+      } else {
+        this.filteredGallery = [...this.gallery];
+      }        
     },
+    changeRole(flag) {
+      this.admin = flag;
+    },
+    deleteGalleryItem(id) {
+      GALLERY = GALLERY.filter(i => i.id !== id);
+      this.gallery = this.gallery.filter(i => i.id !== id);
+      this.filteredGallery = [...this.gallery];
+    },
+    editGalleryItem(item) {
+      // GALLERY = GALLERY.filter(i => i.id !== id);
+
+      // this.gallery = this.gallery.filter(i => i.id !== id);
+      // this.filteredGallery = [...this.gallery];
+    }
   },
-  getters: {
-    // filteredGallery() {
-    //   return this.filteredGallery.length ? this.filteredGallery : this.gallery;
-    // },
-  },
+  getters: {},
 });
