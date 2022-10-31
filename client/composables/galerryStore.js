@@ -1,127 +1,6 @@
 import { defineStore } from "pinia";
 
-let GALLERY = [
-  {
-    id: "1",
-    img: "/images/1_1.jpg",
-    description: "Description 1",
-    title: "Title 1",
-    work: "landscape",
-    author: "Sergey",
-  },
-  {
-    id: "2",
-    img: "/images/1_2.jpg",
-    description: "Description 2",
-    title: "Title 2",
-    work: "landscape",
-    author: "Alexander",
-  },
-  {
-    id: "3",
-    img: "/images/1_3.jpg",
-    description: "Description 3",
-    title: "Title 3",
-    work: "landscape",
-    author: "Dmitry",
-  },
-  {
-    id: "4",
-    img: "/images/1_4.jpg",
-    description: "Description 4",
-    title: "Title 4",
-    work: "landscape",
-    author: "Sergey",
-  },
-  {
-    id: "5",
-    img: "/images/1_5.jpg",
-    description: "Description 5",
-    title: "Title 5",
-    work: "landscape",
-    author: "Alexander",
-  },
-  {
-    id: "6",
-    img: "/images/2_1.jpg",
-    description: "Description 6",
-    title: "Title 6",
-    work: "realism",
-    author: "Alexander",
-  },
-  {
-    id: "7",
-    img: "/images/2_2.jpeg",
-    description: "Description 7",
-    title: "Title 7",
-    work: "realism",
-    author: "Sergey",
-  },
-  {
-    id: "8",
-    img: "/images/2_3.jpeg",
-    description: "Description 8",
-    title: "Title 8",
-    work: "realism",
-    author: "Dmitry",
-  },
-  {
-    id: "9",
-    img: "/images/2_4.jpg",
-    description: "Description 9",
-    title: "Title 9",
-    work: "realism",
-    author: "Alexander",
-  },
-  {
-    id: "10",
-    img: "/images/3_1.jpg",
-    description: "Description 10",
-    title: "Title 10",
-    work: "expressionism",
-    author: "Alexander",
-  },
-  {
-    id: "11",
-    img: "/images/3_2.jpg",
-    description: "Description 11",
-    title: "Title 11",
-    work: "expressionism",
-    author: "Sergey",
-  },
-  {
-    id: "12",
-    img: "/images/3_3.jpg",
-    description: "Description 12",
-    title: "Title 12",
-    work: "expressionism",
-    author: "Dmitry",
-  },
-  {
-    id: "13",
-    img: "/images/4_1.jpg",
-    description: "Description 13",
-    title: "Title 13",
-    work: "foreign",
-    author: "Dmitry",
-  },
-  {
-    id: "14",
-    img: "/images/4_2.jpg",
-    description: "Description 14",
-    title: "Title 14",
-    work: "foreign",
-    author: "Alexander",
-  },
-  {
-    id: "15",
-    img: "/images/4_3.jpg",
-    description: "Description 15",
-    title: "Title 15",
-    work: "foreign",
-    author: "Sergey",
-  },
-];
+const API_URL = "http://gallery.alxbychkov.beget.tech/gallery/";
 
 export const useGalleryStore = defineStore("GalleryStore", {
   state: () => ({
@@ -130,34 +9,48 @@ export const useGalleryStore = defineStore("GalleryStore", {
     admin: false,
     filters: {
       author: new Set(),
-      work: new Set()
+      work: new Set(),
     },
     nav: [],
-    isLoaded: false
+    isLoaded: false,
   }),
   actions: {
     async get(category = "") {
+      const URL = `${API_URL}get-all-products.php`;
       this.isLoaded = false;
+      let response = "";
 
-      if (category && category !== 'all') {
-        this.gallery = [...GALLERY.filter((g) => g.work === category)];
+      if (category && category !== "all") {
+        response = await $fetch(`${URL}?work=${category}`);
       } else {
-        this.gallery = [...GALLERY];
+        response = await $fetch(URL);
       }
-  
+
+      this.gallery = response.status === 1 ? response.message : [];
+
       this.filteredGallery = [...this.gallery];
-      this.nav = new Set(GALLERY.map((i) => i.work));
+      // this.nav = new Set(this.gallery.map((i) => i.work));
+
+      this.getNav();
       this.getFilters();
 
       this.isLoaded = true;
     },
-    getFilters(array) {
+    async getNav() {
+      const URL = `${API_URL}get-nav.php`;
+      const response = await $fetch(URL);
+
+      if (response.status === 1) {
+        this.nav = new Set(response.message.map((i) => i.work));
+      }
+    },
+    getFilters() {
       this.clearFilters();
 
       const temp = {};
 
-      Object.keys(this.filters).forEach(key => {
-        temp[key] = new Set(this.gallery.map((i) => i[key]));      
+      Object.keys(this.filters).forEach((key) => {
+        temp[key] = new Set(this.gallery.map((i) => i[key]));
       });
 
       this.filters = temp;
@@ -165,35 +58,50 @@ export const useGalleryStore = defineStore("GalleryStore", {
     clearFilters() {
       this.filters = {
         author: new Set(),
-        work: new Set()
-      }
+        work: new Set(),
+      };
     },
     filterGallery(obj) {
       let temp = [...this.gallery];
-      
+
       if (Object.entries(obj).length) {
-        Object.entries(obj).forEach(f => {
+        Object.entries(obj).forEach((f) => {
           this.filteredGallery = temp.filter((i) => i[`${f[0]}`] === f[1]);
           temp = this.filteredGallery;
         });
       } else {
         this.filteredGallery = [...this.gallery];
-      }        
+      }
     },
     changeRole(flag) {
       this.admin = flag;
     },
-    deleteGalleryItem(id) {
-      GALLERY = GALLERY.filter(i => i.id !== id);
-      this.gallery = this.gallery.filter(i => i.id !== id);
-      this.filteredGallery = [...this.gallery];
-    },
-    editGalleryItem(item) {
-      // GALLERY = GALLERY.filter(i => i.id !== id);
+    async deleteGalleryItem(id) {
+      const URL = `${API_URL}delete-products.php`;
 
-      // this.gallery = this.gallery.filter(i => i.id !== id);
-      // this.filteredGallery = [...this.gallery];
-    }
+      const response = await $fetch(URL, {
+        method: "POST",
+        body: { id },
+      });
+
+      if (response.status === 1) {
+        this.gallery = this.gallery.filter((i) => i.id !== id);
+        this.filteredGallery = [...this.gallery];
+        alert(response.message);
+      }
+    },
+    async editGalleryItem(item) {
+      const URL = `${API_URL}update-products.php`;
+
+      const response = await $fetch(URL, {
+        method: "POST",
+        body: item,
+      });
+
+      if (response.status === 1) {
+        alert(response.message);
+      }
+    },
   },
   getters: {},
 });

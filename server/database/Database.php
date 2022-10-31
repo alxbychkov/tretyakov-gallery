@@ -1,10 +1,11 @@
 <?php
 class Database
 {
-    private $localhost = "localhost";
-    private $username = "root";
-    private $password = "";
-    private $database = "tretyakov-gallery";
+    private $localhost = "alxbychkov.beget.tech";
+    private $username = "alxbychkov";
+    // private $password = "RMCix&8Z";
+    private $password = "*v7mRL&f";
+    private $database = "alxbychkov_img";
 
     private $mysqli = "";
     private $result = array();

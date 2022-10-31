@@ -11,13 +11,12 @@ if ($_SERVER["REQUEST_METHOD"] == 'GET') {
     try {
         $data = json_decode(file_get_contents("php://input"));
 
-        $obj->select('products', "*", null, null, 'id DESC', null);
+        $obj->select('products', "DISTINCT work", null, null, null, null);
         $products = $obj->getResult();
         if ($products) {
             http_response_code(200);
             echo json_encode([
                 'status' => 1,
-                'data' => $data,
                 'message' => $products,
             ]);
         } else {
